@@ -23,22 +23,22 @@ export const sweep = keyframes`
 `;
 
 export const Page = styled.div`
-  --bg-main: #09050f;
-  --bg-surface: #181025;
-  --bg-soft: #241b35;
-  --text-main: #f9f4e9;
-  --text-muted: #d2c9bb;
-  --primary: #e64b2f;
-  --primary-soft: #ff7b4d;
-  --accent: #f5b44a;
-  --stroke: rgba(245, 180, 74, 0.22);
+  --bg-main: #0b0b0d;
+  --bg-surface: #141418;
+  --bg-soft: #1d1d24;
+  --text-main: #f5f5f7;
+  --text-muted: #a8a8b3;
+  --primary: #d7352a;
+  --primary-soft: #ff5a45;
+  --accent: #ff7b63;
+  --stroke: rgba(255, 90, 69, 0.28);
 
   min-height: 100dvh;
   color: var(--text-main);
   background:
-    radial-gradient(circle at 12% 12%, rgba(230, 75, 47, 0.33), transparent 44%),
-    radial-gradient(circle at 88% 8%, rgba(245, 180, 74, 0.2), transparent 38%),
-    linear-gradient(170deg, #05020a 0%, #120a1d 58%, #09050f 100%);
+    radial-gradient(circle at 12% 12%, rgba(215, 53, 42, 0.33), transparent 44%),
+    radial-gradient(circle at 88% 8%, rgba(255, 90, 69, 0.18), transparent 38%),
+    linear-gradient(170deg, #08080a 0%, #131318 58%, #0b0b0d 100%);
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
 `;
 
