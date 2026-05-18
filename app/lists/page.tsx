@@ -25,7 +25,20 @@ const ListName = styled.h3`
 const AuthorText = styled.p`
     color: #8f84a0;
     font-size: 0.78rem;
+    margin: 0;
+`;
+
+const MetaRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     margin: 0 0 0.4rem;
+    flex-wrap: wrap;
+`;
+
+const MovieCountText = styled.span`
+    color: #8f84a0;
+    font-size: 0.78rem;
 `;
 
 function ListCard({
@@ -42,8 +55,10 @@ function ListCard({
                     {list.name}
                 </Link>
             </ListName>
-            <AuthorText>por {list.user?.username ?? `Usuário #${list.userId}`}</AuthorText>
-            <SmallText>{list.movies?.length ?? 0} filme(s)</SmallText>
+            <MetaRow>
+                <AuthorText>por {list.user?.username ?? `Usuário #${list.userId}`}</AuthorText>
+                <MovieCountText>• {list.movies?.length ?? 0} filme(s)</MovieCountText>
+            </MetaRow>
 
             <Row style={{ marginTop: '0.75rem' }}>
                 <Link href={`/lists/${list.id}`}>

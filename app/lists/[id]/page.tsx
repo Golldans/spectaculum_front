@@ -81,6 +81,19 @@ const CommentMeta = styled.p`
     margin: 0 0 0.25rem;
 `;
 
+const HeaderMeta = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+`;
+
+const HeaderMetaText = styled.span`
+    color: #8f84a0;
+    font-size: 0.82rem;
+`;
+
 interface MovieScoreInfo {
     ownerScore: number | null;
     averageScore: number | null;
@@ -218,21 +231,19 @@ export default function ListDetailPage() {
 
     const moviesInList = list.movies ?? [];
     const moviesNotInList = allMovies.filter(m => !moviesInList.some(lm => lm.id === m.id));
+    const isOwner = Boolean(user && user.id === list.userId);
 
     return (
         <PageContainer>
             <PageTitle>{list.name}</PageTitle>
-            <SmallText style={{ marginBottom: '0.5rem' }}>
-                por {list.user?.username ?? `Usuário #${list.userId}`}
-            </SmallText>
-
-            <Row style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
-                <Tag>{moviesInList.length} filme(s)</Tag>
-            </Row>
+            <HeaderMeta>
+                <HeaderMetaText>por {list.user?.username ?? `Usuário #${list.userId}`}</HeaderMetaText>
+                <HeaderMetaText>• {moviesInList.length} filme(s)</HeaderMetaText>
+            </HeaderMeta>
 
             {error && <ErrorMsg style={{ marginTop: '1rem' }}>{error}</ErrorMsg>}
 
-            {user && (
+            {isOwner && (
                 <form onSubmit={handleAddMovie}>
                     <Row style={{ margin: '1.5rem 0' }}>
                         <select
@@ -277,7 +288,7 @@ export default function ListDetailPage() {
                                 </RatingValue>
                             </RatingLine>
                         </MovieInfo>
-                        {user && (
+                        {isOwner && (
                             <Button $variant="danger" type="button" onClick={() => handleRemoveMovie(movie.id)}
                                 style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
                                 Remover
