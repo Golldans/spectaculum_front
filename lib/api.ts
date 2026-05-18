@@ -24,6 +24,20 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     return res.json();
 }
 
+export interface MovieInput {
+    name: string;
+    coverUrl?: string;
+    year?: string;
+    plot?: string;
+    imdbId?: string;
+}
+
+export interface ScreeningInput {
+    movieId: number;
+    cinemaId: number;
+    exhibitionAt: string;
+}
+
 // Auth
 export const api = {
     auth: {
@@ -37,8 +51,15 @@ export const api = {
     movies: {
         list: (name?: string) => request<Movie[]>(`/movie${name ? `?name=${encodeURIComponent(name)}` : ''}`),
         get: (id: number) => request<Movie>(`/movie/${id}`),
-        create: (name: string) => request<Movie>('/movie', { method: 'POST', body: JSON.stringify({ name }) }),
-        update: (id: number, name: string) => request<Movie>(`/movie/${id}`, { method: 'PUT', body: JSON.stringify({ name }) }),
+        create: (data: MovieInput) =>
+            request<Movie>('/movie', { method: 'POST', body: JSON.stringify(data) }),
+        update: (id: number, data: MovieInput) =>
+            request<Movie>(`/movie/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+        coverSuggestions: (name: string, year?: string) => {
+            const params = new URLSearchParams({ name });
+            if (year?.trim()) params.set('year', year.trim());
+            return request<MovieCoverSuggestion[]>(`/movie/cover-suggestions/search?${params.toString()}`);
+        },
         remove: (id: number) => request(`/movie/${id}`, { method: 'DELETE' }),
     },
     cinemas: {
@@ -52,6 +73,12 @@ export const api = {
         create: (data: Omit<Cinema, 'id' | 'createdAt' | 'updatedAt'>) =>
             request<Cinema>('/cinema', { method: 'POST', body: JSON.stringify(data) }),
         remove: (id: number) => request(`/cinema/${id}`, { method: 'DELETE' }),
+    },
+    screenings: {
+        byCinema: (cinemaId: number) => request<Screening[]>(`/screening/cinema/${cinemaId}`),
+        create: (data: ScreeningInput) =>
+            request<Screening>('/screening', { method: 'POST', body: JSON.stringify(data) }),
+        notifications: () => request<ScreeningNotification[]>('/screening/notifications'),
     },
     lists: {
         list: (userId?: number) => request<List[]>(`/list${userId ? `?userId=${userId}` : ''}`),
@@ -74,8 +101,8 @@ export const api = {
     },
     comments: {
         byMovie: (movieId: number) => request<Comment[]>(`/comment/movie/${movieId}`),
-        create: (content: string, userId: number, movieId: number) =>
-            request<Comment>('/comment', { method: 'POST', body: JSON.stringify({ content, userId, movieId }) }),
+        create: (content: string, movieId: number) =>
+            request<Comment>('/comment', { method: 'POST', body: JSON.stringify({ content, movieId }) }),
         remove: (id: number) => request(`/comment/${id}`, { method: 'DELETE' }),
     },
     ratings: {
@@ -96,10 +123,42 @@ export const api = {
 };
 
 // Types
-export interface Movie { id: number; name: string; createdAt?: string; }
+export interface Movie {
+    id: number;
+    name: string;
+    coverUrl?: string;
+    year?: string;
+    plot?: string;
+    imdbId?: string;
+    createdAt?: string;
+}
+export interface MovieCoverSuggestion {
+    title: string;
+    year?: string;
+    plot?: string;
+    imdbId: string;
+    coverUrl: string;
+}
 export interface Cinema { id: number; name: string; location: string; startTime: string; endTime: string; }
+export interface Screening { id: number; movieId: number; cinemaId: number; exhibitionAt: string; }
+export interface ScreeningNotification {
+    id: number;
+    movieId: number;
+    movieName: string;
+    cinemaId: number;
+    cinemaName: string;
+    cinemaLocation: string;
+    exhibitionAt: string;
+}
 export interface List { id: number; name: string; userId: number; movies?: Movie[]; }
 export interface WatchlistItem { id: number; userId: number; movieId: number; createdAt?: string; }
-export interface Comment { id: number; content: string; userId: number; movieId: number; createdAt?: string; }
+export interface Comment {
+    id: number;
+    content: string;
+    userId: number;
+    movieId: number;
+    createdAt?: string;
+    user?: { id: number; username: string };
+}
 export interface Rating { id: number; score: number; userId: number; movieId: number; }
 export interface User { id: number; username: string; email: string; friends?: User[]; }

@@ -42,6 +42,40 @@ const CommentRow = styled.div`
     gap: 1rem;
 `;
 
+const HeroSection = styled.section`
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+
+    @media (max-width: 760px) {
+        grid-template-columns: 1fr;
+    }
+`;
+
+const MovieCover = styled.img`
+    width: 100%;
+    max-width: 260px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+`;
+
+const HeroContent = styled.div`
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 10px;
+    padding: 1rem;
+`;
+
+const MetaText = styled.p`
+    color: #d3cab9;
+    margin: 0.4rem 0;
+    line-height: 1.45;
+`;
+
 export default function MovieDetailPage() {
     const params = useParams();
     const id = parseInt(params.id as string);
@@ -90,7 +124,7 @@ export default function MovieDetailPage() {
         e.preventDefault();
         if (!user || !newComment.trim()) return;
         try {
-            const c = await api.comments.create(newComment.trim(), user.id, id);
+            const c = await api.comments.create(newComment.trim(), id);
             setComments(prev => [c as Comment, ...prev]);
             setNewComment('');
         } catch (err: any) {
@@ -139,6 +173,19 @@ export default function MovieDetailPage() {
     return (
         <PageContainer>
             <PageTitle>{movie.name}</PageTitle>
+
+            <HeroSection>
+                {movie.coverUrl && (
+                    <MovieCover src={movie.coverUrl} alt={`Capa de ${movie.name}`} />
+                )}
+
+                <HeroContent>
+                    {movie.year && <MetaText>Ano: {movie.year}</MetaText>}
+                    {movie.imdbId && <MetaText>IMDb: {movie.imdbId}</MetaText>}
+                    {movie.plot && <MetaText>{movie.plot}</MetaText>}
+                    {!movie.plot && <MetaText>Sem descricao disponível para este filme.</MetaText>}
+                </HeroContent>
+            </HeroSection>
 
             <Row>
                 {avgRating && <Tag>⭐ {avgRating} ({ratings.length} avaliações)</Tag>}
@@ -195,7 +242,7 @@ export default function MovieDetailPage() {
                         <CommentRow>
                             <div>
                                 <SmallText style={{ color: '#f5b44a', marginBottom: '0.25rem' }}>
-                                    Usuário #{c.userId}
+                                    {c.user?.username ?? `Usuário #${c.userId}`}
                                 </SmallText>
                                 <p style={{ margin: 0, color: '#f9f4e9' }}>{c.content}</p>
                             </div>

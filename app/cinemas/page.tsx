@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api, Cinema } from '../../lib/api';
+import { api, Cinema, Movie, Screening } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import styled from 'styled-components';
 import { PageContainer, PageTitle, Card, Grid, Button, Input, Row, ErrorMsg, SmallText, Tag } from '../components/shared/ui';
@@ -23,12 +23,32 @@ const FormGrid = styled.div`
     border-radius: 10px;
 `;
 
+const Select = styled.select`
+    background: var(--bg-soft);
+    border: 1px solid var(--stroke);
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    width: 100%;
+`;
+
+const SessionList = styled.ul`
+    margin: 0.6rem 0 0;
+    padding-left: 1rem;
+    color: #d9cfbf;
+    font-size: 0.82rem;
+`;
+
 export default function CinemasPage() {
     const { user } = useAuth();
     const [cinemas, setCinemas] = useState<Cinema[]>([]);
+    const [movies, setMovies] = useState<Movie[]>([]);
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [showForm, setShowForm] = useState(false);
+    const [sessionsByCinema, setSessionsByCinema] = useState<Record<number, Screening[]>>({});
+    const [sessionFormByCinema, setSessionFormByCinema] = useState<Record<number, { movieId: string; exhibitionAt: string }>>({});
     const [form, setForm] = useState({ name: '', location: '', startTime: '', endTime: '' });
 
     const fetchCinemas = async () => {
@@ -41,6 +61,26 @@ export default function CinemasPage() {
     };
 
     useEffect(() => { fetchCinemas(); }, []);
+
+    useEffect(() => {
+        if (!user) return;
+        api.movies.list()
+            .then((data) => setMovies(data as Movie[]))
+            .catch(() => setMovies([]));
+    }, [user]);
+
+    useEffect(() => {
+        if (!cinemas.length) return;
+
+        Promise.all(
+            cinemas.map(async (cinema) => {
+                const sessions = await api.screenings.byCinema(cinema.id);
+                return [cinema.id, sessions as Screening[]] as const;
+            }),
+        )
+            .then((entries) => setSessionsByCinema(Object.fromEntries(entries)))
+            .catch(() => {});
+    }, [cinemas]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,6 +103,43 @@ export default function CinemasPage() {
         try {
             await api.cinemas.remove(id);
             setCinemas(prev => prev.filter(c => c.id !== id));
+        } catch (err: any) {
+            setError(err.message);
+        }
+    };
+
+    const handleSessionChange = (cinemaId: number, field: 'movieId' | 'exhibitionAt', value: string) => {
+        setSessionFormByCinema((prev) => ({
+            ...prev,
+            [cinemaId]: {
+                movieId: prev[cinemaId]?.movieId ?? '',
+                exhibitionAt: prev[cinemaId]?.exhibitionAt ?? '',
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleSchedule = async (cinemaId: number) => {
+        const formState = sessionFormByCinema[cinemaId];
+        if (!formState?.movieId || !formState.exhibitionAt) return;
+
+        try {
+            const created = await api.screenings.create({
+                cinemaId,
+                movieId: Number(formState.movieId),
+                exhibitionAt: new Date(formState.exhibitionAt).toISOString(),
+            });
+
+            setSessionsByCinema((prev) => ({
+                ...prev,
+                [cinemaId]: [...(prev[cinemaId] ?? []), created as Screening]
+                    .sort((a, b) => new Date(a.exhibitionAt).getTime() - new Date(b.exhibitionAt).getTime()),
+            }));
+
+            setSessionFormByCinema((prev) => ({
+                ...prev,
+                [cinemaId]: { movieId: '', exhibitionAt: '' },
+            }));
         } catch (err: any) {
             setError(err.message);
         }
@@ -116,6 +193,42 @@ export default function CinemasPage() {
                         <SmallText style={{ marginTop: '0.5rem' }}>
                             {new Date(cinema.startTime).toLocaleString('pt-BR')} — {new Date(cinema.endTime).toLocaleString('pt-BR')}
                         </SmallText>
+                        {user && (
+                            <>
+                                <Row style={{ marginTop: '0.85rem' }}>
+                                    <Select
+                                        value={sessionFormByCinema[cinema.id]?.movieId ?? ''}
+                                        onChange={(e) => handleSessionChange(cinema.id, 'movieId', e.target.value)}
+                                    >
+                                        <option value="">Filme em sessão...</option>
+                                        {movies.map((movie) => (
+                                            <option key={movie.id} value={movie.id}>{movie.name}</option>
+                                        ))}
+                                    </Select>
+                                    <Input
+                                        type="datetime-local"
+                                        value={sessionFormByCinema[cinema.id]?.exhibitionAt ?? ''}
+                                        onChange={(e) => handleSessionChange(cinema.id, 'exhibitionAt', e.target.value)}
+                                    />
+                                    <Button type="button" onClick={() => handleSchedule(cinema.id)}>
+                                        Agendar sessão
+                                    </Button>
+                                </Row>
+
+                                {(sessionsByCinema[cinema.id]?.length ?? 0) > 0 && (
+                                    <SessionList>
+                                        {sessionsByCinema[cinema.id].map((session) => {
+                                            const movieName = movies.find((movie) => movie.id === session.movieId)?.name ?? `Filme #${session.movieId}`;
+                                            return (
+                                                <li key={session.id}>
+                                                    {movieName} em {new Date(session.exhibitionAt).toLocaleString('pt-BR')}
+                                                </li>
+                                            );
+                                        })}
+                                    </SessionList>
+                                )}
+                            </>
+                        )}
                         {user && (
                             <Row style={{ marginTop: '0.75rem' }}>
                                 <Button $variant="danger" type="button" onClick={() => handleDelete(cinema.id)}
