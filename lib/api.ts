@@ -92,6 +92,14 @@ export const api = {
         removeMovie: (listId: number, movieId: number) =>
             request(`/list/${listId}/movies/${movieId}`, { method: 'DELETE' }),
         remove: (id: number) => request(`/list/${id}`, { method: 'DELETE' }),
+        getRatings: (id: number) => request<ListRating[]>(`/list/${id}/ratings`),
+        rate: (id: number, score: number) =>
+            request<ListRating>(`/list/${id}/ratings`, { method: 'POST', body: JSON.stringify({ score }) }),
+        getComments: (id: number) => request<ListComment[]>(`/list/${id}/comments`),
+        addComment: (id: number, content: string) =>
+            request<ListComment>(`/list/${id}/comments`, { method: 'POST', body: JSON.stringify({ content }) }),
+        removeComment: (listId: number, commentId: number) =>
+            request(`/list/${listId}/comments/${commentId}`, { method: 'DELETE' }),
     },
     watchlist: {
         get: (userId: number) => request<WatchlistItem[]>(`/watchlist?userId=${userId}`),
@@ -150,7 +158,9 @@ export interface ScreeningNotification {
     cinemaLocation: string;
     exhibitionAt: string;
 }
-export interface List { id: number; name: string; userId: number; movies?: Movie[]; }
+export interface ListRating { id: number; listId: number; userId: number; score: number; }
+export interface ListComment { id: number; listId: number; userId: number; content: string; createdAt: string; user?: { id: number; username: string }; }
+export interface List { id: number; name: string; userId: number; user?: { id: number; username: string }; movies?: Movie[]; ratings?: ListRating[]; }
 export interface WatchlistItem { id: number; userId: number; movieId: number; createdAt?: string; }
 export interface Comment {
     id: number;

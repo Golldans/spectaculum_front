@@ -184,21 +184,20 @@ export default function MovieDetailPage() {
                     {movie.imdbId && <MetaText>IMDb: {movie.imdbId}</MetaText>}
                     {movie.plot && <MetaText>{movie.plot}</MetaText>}
                     {!movie.plot && <MetaText>Sem descricao disponível para este filme.</MetaText>}
+                    <Row style={{ marginTop: '1.25rem' }}>
+                        {avgRating && <Tag>⭐ {avgRating} ({ratings.length} avaliações)</Tag>}
+                        {user && (
+                            <Button
+                                $variant={watchlistItem ? 'ghost' : 'primary'}
+                                onClick={handleWatchlist}
+                                type="button"
+                            >
+                                {watchlistItem ? '✓ Na Watchlist' : '+ Watchlist'}
+                            </Button>
+                        )}
+                    </Row>
                 </HeroContent>
             </HeroSection>
-
-            <Row>
-                {avgRating && <Tag>⭐ {avgRating} ({ratings.length} avaliações)</Tag>}
-                {user && (
-                    <Button
-                        $variant={watchlistItem ? 'ghost' : 'primary'}
-                        onClick={handleWatchlist}
-                        type="button"
-                    >
-                        {watchlistItem ? '✓ Na Watchlist' : '+ Watchlist'}
-                    </Button>
-                )}
-            </Row>
 
             {error && <ErrorMsg>{error}</ErrorMsg>}
 
