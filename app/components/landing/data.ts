@@ -29,48 +29,64 @@ export const cinemaPreviews: CinemaPreview[] = [
 export const howItWorksItems = [
   {
     step: "1",
-    title: "Escolha o alcance",
-    text: "Defina um raio de busca em torno da sua regiao para filtrar opcoes realmente proximas.",
+    title: "Descubra filmes",
+    text: "Busque e explore filmes com metadados ricos da integração OMDb: sinopse, ano, IMDb ID e capas de alta qualidade.",
   },
   {
     step: "2",
-    title: "Veja cinemas elegiveis",
-    text: "O sistema lista salas ativas com distancia estimada e horarios de sessao em destaque.",
+    title: "Avalie e comente",
+    text: "Compartilhe sua opinião com avaliações de estrelas (inclui meia estrela) e comentários nomeados com outros cinéfilos.",
   },
   {
     step: "3",
-    title: "Escolha sua proxima sessao",
-    text: "Compare rapidamente e tome a decisao com base em tempo, local e formato de exibicao.",
+    title: "Conecte-se e organize",
+    text: "Envie pedidos de amizade, crie listas colaborativas, receba notificações de sessões em cinemas e construa sua rede de cinéfilos.",
   },
 ];
 
 export const benefits = [
   {
-    title: "Busca orientada por proximidade",
-    text: "Resultados focados em distancia real para evitar deslocamentos longos.",
+    title: "Metadados ricos com OMDb",
+    text: "Acesso a dados completos de filmes incluindo sinopse, ano de lançamento, IMDb ID e capas oficiais.",
   },
   {
-    title: "Leitura rapida de disponibilidade",
-    text: "Horarios e detalhes essenciais em primeiro plano, sem tela poluida.",
+    title: "Avaliações precisas com meia-estrela",
+    text: "Sistema de rating granular que permite expressar sua opinião de forma mais precisa e exata.",
   },
   {
-    title: "Base pronta para API de mapas",
-    text: "Estrutura da interface preparada para integrar dados de localizacao na proxima etapa.",
+    title: "Cinemas validados por CEP",
+    text: "Cadastro de cinemas com validação automática de endereço via ViaCEP. Endereços estruturados e confiáveis.",
   },
   {
-    title: "Experiencia clara no celular",
-    text: "Layout responsivo desde o inicio para consulta rapida na rua ou em casa.",
-  },
-];
-
-export const faqItems = [
-  {
-    question: "Ja usa geolocalizacao real?",
-    answer: "Ainda nao. Esta landing apresenta o conceito e o fluxo visual inicial da plataforma.",
+    title: "Notificações em tempo real",
+    text: "Receba alertas quando filmes da sua watchlist entram em sessão em cinemas cadastrados. Nunca perca uma oportunidade.",
   },
   {
-    question: "Posso escolher o raio de busca?",
-    answer: "Sim. O produto foi pensado exatamente para definir o alcance da regiao e filtrar os cinemas.",
+    title: "Rede social de cinéfilos",
+    text: "Sistema de amizade com solicitações, listas colaborativas e comentários para conectar com outros fãs de cinema.",
+  },
+  {Como funciona a busca de filmes?",
+    answer: "Utilize o campo de busca para encontrar filmes no OMDb. Você pode filtrar por ano para resultados mais precisos. Cada filme traz metadados completos incluindo sinopse e IMDb ID.",
+  },
+  {
+    question: "Como recebo notificações de sessões?",
+    answer: "Adicione filmes à sua watchlist clicando no botão de coração. Quando um cinema cadastrar uma sessão para um filme da sua watchlist, você receberá uma notificação no sino da navbar.",
+  },
+  {
+    question: "Como funcionam as avaliações?",
+    answer: "Cada filme pode receber avaliações de estrelas (com suporte a meia-estrela) de qualquer usuário. A média das avaliações aparece na página do filme para ajudar na decisão.",
+  },
+  {
+    question: "Como adiciono um cinema?",
+    answer: "Vá até a página de cinemas e use o formulário de cadastro. Insira o CEP e o sistema busca automaticamente o endereço via ViaCEP. Você também pode agendar sessões de filmes nos cinemas.",
+  },
+  {
+    question: "Como funcionam as listas colaborativas?",
+    answer: "Crie listas personalizadas de filmes. Você pode adicionar/remover filmes, deixar comentários e avaliações. Outras pessoas podem comentar em suas listas públicas.",
+  },
+  {
+    question: "Como funciona o sistema de amigos?",
+    answer: "Busque outros usuários e envie pedidos de amizade. O outro usuário pode aceitar ou rejeitar o pedido. Quando aceito, você vê a lista de filmes e recomendações do seu amigoemas.",
   },
   {
     question: "Vai integrar com API do Google?",

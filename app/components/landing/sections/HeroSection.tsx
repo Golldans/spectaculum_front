@@ -122,31 +122,51 @@ const Distance = styled.small`
 export function HeroSection() {
   return (
     <Hero>
-      <Eyebrow>● Seu radar de cinema local</Eyebrow>
+      <Eyebrow>● Comunidade de cinéfilos</Eyebrow>
       <HeroGrid>
         <div>
-          <HeroTitle>Encontre cinemas perto de voce em segundos.</HeroTitle>
+          <HeroTitle>Descubra, avalie e compartilhe filmes.</HeroTitle>
           <HeroText>
-            O Spectaculum ajuda voce a definir um alcance na sua regiao e descobrir
-            opcoes de cinema por proximidade, horario e tipo de sala.
+            Spectaculum é sua plataforma para explorar filmes com metadados ricos, 
+            avaliar com precisão, criar listas colaborativas, conectar com amigos 
+            cinéfilos e receber notificações de sessões em cinemas.
           </HeroText>
           <CtaRow>
-            <PrimaryButton href="#cinemas">Encontrar cinemas proximos</PrimaryButton>
-            <GhostButton href="#como-funciona">Ver como funciona</GhostButton>
+            <PrimaryButton href="/movies">Explorar filmes</PrimaryButton>
+            <GhostButton href="#como-funciona">Como funciona</GhostButton>
           </CtaRow>
         </div>
 
-        <HeroCard aria-label="preview de cinemas proximos">
+        <HeroCard aria-label="destaques do Spectaculum">
           <HeroCardBody>
-            <CardTitle>Preview na sua regiao</CardTitle>
+            <CardTitle>Principais recursos</CardTitle>
             <DotLine />
             <CinemaList>
-              {cinemaPreviews.map((cinema) => (
-                <CinemaItem key={cinema.name}>
-                  <CinemaName>{cinema.name}</CinemaName>
-                  <Distance>{cinema.distance}</Distance>
-                </CinemaItem>
-              ))}
+              <CinemaItem>
+                <CinemaName>🎥 Metadados OMDb</CinemaName>
+                <Distance>Sinopse, capas</Distance>
+              </CinemaItem>
+              <CinemaItem>
+                <CinemaName>⭐ Avaliações</CinemaName>
+                <Distance>Meia-estrela</Distance>
+              </CinemaItem>
+              <CinemaItem>
+                <CinemaName>📋 Listas</CinemaName>
+                <Distance>Colaborativas</Distance>
+              </CinemaItem>
+              <CinemaItem>
+                <CinemaName>👥 Amigos</CinemaName>
+                <Distance>Rede social</Distance>
+              </CinemaItem>
+              <CinemaItem>
+                <CinemaName>🔔 Notificações</CinemaName>
+                <Distance>Sessões</Distance>
+              </CinemaItem>
+              <CinemaItem>
+                <CinemaName>🍿 Cinemas</CinemaName>
+                <Distance>Validados CEP</Distance>
+              </CinemaItem>
+            </CinemaList>
             </CinemaList>
           </HeroCardBody>
         </HeroCard>

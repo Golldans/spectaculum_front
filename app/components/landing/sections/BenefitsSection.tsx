@@ -25,7 +25,7 @@ export function BenefitsSection() {
   return (
     <SectionBlock
       title="Por que usar o Spectaculum"
-      text="Uma camada de descoberta pensada para quem quer menos busca manual e mais tempo para curtir o filme."
+      text="Tudo que você precisa para descobrir, avaliar, compartilhar e se conectar com a comunidade de cinéfilos."
     >
       <BenefitGrid>
         {benefits.map((benefit) => (
