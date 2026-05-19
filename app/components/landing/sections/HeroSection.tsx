@@ -167,7 +167,6 @@ export function HeroSection() {
                 <Distance>Validados CEP</Distance>
               </CinemaItem>
             </CinemaList>
-            </CinemaList>
           </HeroCardBody>
         </HeroCard>
       </HeroGrid>

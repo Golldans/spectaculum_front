@@ -65,7 +65,15 @@ export const benefits = [
     title: "Rede social de cinéfilos",
     text: "Sistema de amizade com solicitações, listas colaborativas e comentários para conectar com outros fãs de cinema.",
   },
-  {Como funciona a busca de filmes?",
+  {
+    title: "Autoria em comentários",
+    text: "Todos os comentários mostram o autor, criando um histórico de discussão genuíno e rastreável.",
+  },
+];
+
+export const faqItems = [
+  {
+    question: "Como funciona a busca de filmes?",
     answer: "Utilize o campo de busca para encontrar filmes no OMDb. Você pode filtrar por ano para resultados mais precisos. Cada filme traz metadados completos incluindo sinopse e IMDb ID.",
   },
   {
@@ -83,14 +91,6 @@ export const benefits = [
   {
     question: "Como funcionam as listas colaborativas?",
     answer: "Crie listas personalizadas de filmes. Você pode adicionar/remover filmes, deixar comentários e avaliações. Outras pessoas podem comentar em suas listas públicas.",
-  },
-  {
-    question: "Como funciona o sistema de amigos?",
-    answer: "Busque outros usuários e envie pedidos de amizade. O outro usuário pode aceitar ou rejeitar o pedido. Quando aceito, você vê a lista de filmes e recomendações do seu amigoemas.",
-  },
-  {
-    question: "Vai integrar com API do Google?",
-    answer: "Sim, esta na proxima fase do projeto para alimentar os resultados com dados reais.",
   },
   {
     question: "Funciona no celular?",
