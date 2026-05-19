@@ -13,6 +13,7 @@ const CinemaName = styled.h3`
 `;
 
 const FormGrid = styled.div`
+    position: relative;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 0.75rem;
@@ -40,16 +41,59 @@ const SessionList = styled.ul`
     font-size: 0.82rem;
 `;
 
+const FormLoadingOverlay = styled.div`
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(24, 16, 37, 0.72);
+    border-radius: 10px;
+    z-index: 2;
+`;
+
+const Spinner = styled.div`
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(245, 180, 74, 0.25);
+    border-top-color: #f5b44a;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+`;
+
 export default function CinemasPage() {
     const { user } = useAuth();
     const [cinemas, setCinemas] = useState<Cinema[]>([]);
     const [movies, setMovies] = useState<Movie[]>([]);
+    const [moviesLoading, setMoviesLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [sessionsByCinema, setSessionsByCinema] = useState<Record<number, Screening[]>>({});
     const [sessionFormByCinema, setSessionFormByCinema] = useState<Record<number, { movieId: string; exhibitionAt: string }>>({});
-    const [form, setForm] = useState({ name: '', location: '', startTime: '', endTime: '' });
+    const [isLookingUpCep, setIsLookingUpCep] = useState(false);
+    const [form, setForm] = useState({
+        name: '',
+        cep: '',
+        street: '',
+        number: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+        complement: '',
+    });
+
+    const formatCepInput = (value: string): string => {
+        const digits = value.replace(/\D/g, '').slice(0, 8);
+        if (digits.length <= 5) return digits;
+        return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+    };
 
     const fetchCinemas = async () => {
         try {
@@ -60,13 +104,23 @@ export default function CinemasPage() {
         }
     };
 
+    const fetchMovies = async () => {
+        if (!user) return;
+        try {
+            setMoviesLoading(true);
+            const data = await api.movies.list();
+            setMovies(data as Movie[]);
+        } catch {
+            setMovies([]);
+        } finally {
+            setMoviesLoading(false);
+        }
+    };
+
     useEffect(() => { fetchCinemas(); }, []);
 
     useEffect(() => {
-        if (!user) return;
-        api.movies.list()
-            .then((data) => setMovies(data as Movie[]))
-            .catch(() => setMovies([]));
+        fetchMovies();
     }, [user]);
 
     useEffect(() => {
@@ -82,17 +136,83 @@ export default function CinemasPage() {
             .catch(() => {});
     }, [cinemas]);
 
+    useEffect(() => {
+        const cepDigits = form.cep.replace(/\D/g, '');
+        if (cepDigits.length !== 8) return;
+
+        let cancelled = false;
+        const timeout = setTimeout(async () => {
+            try {
+                setIsLookingUpCep(true);
+                const data = await api.cinemas.lookupCep(cepDigits);
+                if (cancelled) return;
+
+                setForm((prev) => {
+                    const currentCepDigits = prev.cep.replace(/\D/g, '');
+                    if (currentCepDigits !== cepDigits) return prev;
+                    return {
+                        ...prev,
+                        cep: data.cep,
+                        street: data.street,
+                        neighborhood: data.neighborhood,
+                        city: data.city,
+                        state: data.state,
+                    };
+                });
+                setError('');
+            } catch (err: any) {
+                if (!cancelled) setError(err.message);
+            } finally {
+                if (!cancelled) setIsLookingUpCep(false);
+            }
+        }, 1000);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timeout);
+        };
+    }, [form.cep]);
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isLookingUpCep) return;
         try {
             const cinema = await api.cinemas.create({
                 name: form.name,
-                location: form.location,
-                startTime: form.startTime,
-                endTime: form.endTime,
+                location: '',
+                cep: form.cep,
+                street: form.street,
+                number: form.number,
+                neighborhood: form.neighborhood,
+                city: form.city,
+                state: form.state,
+                complement: form.complement,
             });
-            setCinemas(prev => [cinema as Cinema, ...prev]);
-            setForm({ name: '', location: '', startTime: '', endTime: '' });
+            const createdCinema = cinema as Cinema;
+            setCinemas(prev => [createdCinema, ...prev]);
+            setSessionsByCinema(prev => ({
+                ...prev,
+                [createdCinema.id]: [],
+            }));
+            setSessionFormByCinema(prev => ({
+                ...prev,
+                [createdCinema.id]: { movieId: '', exhibitionAt: '' },
+            }));
+
+            if (!movies.length) {
+                await fetchMovies();
+            }
+
+            setForm({
+                name: '',
+                cep: '',
+                street: '',
+                number: '',
+                neighborhood: '',
+                city: '',
+                state: '',
+                complement: '',
+            });
             setShowForm(false);
         } catch (err: any) {
             setError(err.message);
@@ -168,18 +288,27 @@ export default function CinemasPage() {
             {showForm && (
                 <form onSubmit={handleCreate}>
                     <FormGrid>
-                        <Input placeholder="Nome" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
-                        <Input placeholder="Localização" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} required />
-                        <div>
-                            <SmallText>Início das sessões</SmallText>
-                            <Input type="datetime-local" value={form.startTime} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} required />
-                        </div>
-                        <div>
-                            <SmallText>Fim das sessões</SmallText>
-                            <Input type="datetime-local" value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} required />
-                        </div>
+                        {isLookingUpCep && (
+                            <FormLoadingOverlay>
+                                <Spinner />
+                            </FormLoadingOverlay>
+                        )}
+                        <Input disabled={isLookingUpCep} placeholder="Nome" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+                        <Input
+                            disabled={isLookingUpCep}
+                            placeholder="CEP"
+                            value={form.cep}
+                            onChange={e => setForm(f => ({ ...f, cep: formatCepInput(e.target.value) }))}
+                            required
+                        />
+                        <Input disabled={isLookingUpCep} placeholder="Logradouro" value={form.street} onChange={e => setForm(f => ({ ...f, street: e.target.value }))} required />
+                        <Input disabled={isLookingUpCep} placeholder="Número" value={form.number} onChange={e => setForm(f => ({ ...f, number: e.target.value }))} required />
+                        <Input disabled={isLookingUpCep} placeholder="Complemento (opcional)" value={form.complement} onChange={e => setForm(f => ({ ...f, complement: e.target.value }))} />
+                        <Input disabled={isLookingUpCep} placeholder="Bairro" value={form.neighborhood} onChange={e => setForm(f => ({ ...f, neighborhood: e.target.value }))} required />
+                        <Input disabled={isLookingUpCep} placeholder="Cidade" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} required />
+                        <Input disabled={isLookingUpCep} placeholder="UF" value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value.toUpperCase().slice(0, 2) }))} required />
                     </FormGrid>
-                    <Button type="submit">Criar Cinema</Button>
+                    <Button type="submit" disabled={isLookingUpCep}>Criar Cinema</Button>
                 </form>
             )}
 
@@ -189,19 +318,19 @@ export default function CinemasPage() {
                 {cinemas.map(cinema => (
                     <Card key={cinema.id}>
                         <CinemaName>{cinema.name}</CinemaName>
-                        <Tag>📍 {cinema.location}</Tag>
-                        <SmallText style={{ marginTop: '0.5rem' }}>
-                            {new Date(cinema.startTime).toLocaleString('pt-BR')} — {new Date(cinema.endTime).toLocaleString('pt-BR')}
-                        </SmallText>
+                        <Tag>📍 {cinema.location || [cinema.street, cinema.number, cinema.city].filter(Boolean).join(', ')}</Tag>
                         {user && (
                             <>
                                 <Row style={{ marginTop: '0.85rem' }}>
                                     <Select
                                         value={sessionFormByCinema[cinema.id]?.movieId ?? ''}
                                         onChange={(e) => handleSessionChange(cinema.id, 'movieId', e.target.value)}
+                                        disabled={moviesLoading || movies.length === 0}
                                     >
                                         <option value="">Filme em sessão...</option>
-                                        {movies.map((movie) => (
+                                        {moviesLoading && <option value="" disabled>Carregando filmes...</option>}
+                                        {!moviesLoading && movies.length === 0 && <option value="" disabled>Nenhum filme cadastrado</option>}
+                                        {!moviesLoading && movies.map((movie) => (
                                             <option key={movie.id} value={movie.id}>{movie.name}</option>
                                         ))}
                                     </Select>
@@ -210,7 +339,7 @@ export default function CinemasPage() {
                                         value={sessionFormByCinema[cinema.id]?.exhibitionAt ?? ''}
                                         onChange={(e) => handleSessionChange(cinema.id, 'exhibitionAt', e.target.value)}
                                     />
-                                    <Button type="button" onClick={() => handleSchedule(cinema.id)}>
+                                    <Button type="button" onClick={() => handleSchedule(cinema.id)} disabled={moviesLoading || movies.length === 0}>
                                         Agendar sessão
                                     </Button>
                                 </Row>

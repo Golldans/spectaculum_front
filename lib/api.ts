@@ -69,6 +69,7 @@ export const api = {
             if (location) params.set('location', location);
             return request<Cinema[]>(`/cinema${params.toString() ? `?${params}` : ''}`);
         },
+        lookupCep: (cep: string) => request<CepLookup>(`/cinema/cep/${encodeURIComponent(cep)}`),
         get: (id: number) => request<Cinema>(`/cinema/${id}`),
         create: (data: Omit<Cinema, 'id' | 'createdAt' | 'updatedAt'>) =>
             request<Cinema>('/cinema', { method: 'POST', body: JSON.stringify(data) }),
@@ -153,7 +154,25 @@ export interface MovieCoverSuggestion {
     imdbId: string;
     coverUrl: string;
 }
-export interface Cinema { id: number; name: string; location: string; startTime: string; endTime: string; }
+export interface Cinema {
+    id: number;
+    name: string;
+    location: string;
+    cep?: string;
+    street?: string;
+    number?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    complement?: string;
+}
+export interface CepLookup {
+    cep: string;
+    street: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+}
 export interface Screening { id: number; movieId: number; cinemaId: number; exhibitionAt: string; }
 export interface ScreeningNotification {
     id: number;
