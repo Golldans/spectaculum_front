@@ -127,6 +127,12 @@ export const api = {
             request(`/users/${id}/friends/${friendId}`, { method: 'POST' }),
         removeFriend: (id: number, friendId: number) =>
             request(`/users/${id}/friends/${friendId}`, { method: 'DELETE' }),
+        incomingFriendRequests: (id: number) => request<FriendRequest[]>(`/users/${id}/friend-requests/incoming`),
+        outgoingFriendRequests: (id: number) => request<FriendRequest[]>(`/users/${id}/friend-requests/outgoing`),
+        acceptFriendRequest: (id: number, requestId: number) =>
+            request(`/users/${id}/friend-requests/${requestId}/accept`, { method: 'POST' }),
+        rejectFriendRequest: (id: number, requestId: number) =>
+            request(`/users/${id}/friend-requests/${requestId}/reject`, { method: 'POST' }),
     },
 };
 
@@ -172,3 +178,12 @@ export interface Comment {
 }
 export interface Rating { id: number; score: number; userId: number; movieId: number; }
 export interface User { id: number; username: string; email: string; friends?: User[]; }
+export interface FriendRequest {
+    id: number;
+    requesterId: number;
+    receiverId: number;
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: string;
+    requester?: { id: number; username: string };
+    receiver?: { id: number; username: string };
+}
